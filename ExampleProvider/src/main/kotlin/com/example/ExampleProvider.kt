@@ -11,7 +11,6 @@ class HindiAnimeZone : MainAPI() {
     override val hasMainPage = true
     override var lang = "hi"
 
-    // 🔥 HOMEPAGE
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val doc = app.get(mainUrl).document
 
@@ -29,7 +28,6 @@ class HindiAnimeZone : MainAPI() {
         )
     }
 
-    // 🔥 DETAIL PAGE
     override suspend fun load(url: String): LoadResponse {
         val doc = app.get(url).document
 
@@ -37,45 +35,43 @@ class HindiAnimeZone : MainAPI() {
         val poster = doc.select(".td-post-featured-image img").attr("src")
         val desc = doc.select(".td-post-content").text()
 
-        // Episode = same page (WordPress post)
-        val episode = Episode(
-            name = title,
-            data = url
+        val episode = newEpisode(
+            data = url,
+            name = title
         )
 
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             this.posterUrl = poster
             this.plot = desc
-            this.episodes = listOf(episode)
+            this.episodes = mutableMapOf(DubStatus.Dubbed to listOf(episode))
         }
     }
 
-    // 🔥 VIDEO SCRAPER (MOST IMPORTANT)
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
 
         val doc = app.get(data).document
 
-        // STEP 1: find player iframe page (tumhari file se)
         val script = doc.html()
 
         val playerUrl = Regex("""https:\/\/hindianimezone\.p2pplay\.online\/#\w+""")
             .find(script)?.value
 
         if (playerUrl != null) {
-
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source = "HindiAnimeZone",
                     name = "Server 1",
                     url = playerUrl,
-                    referer = data,
-                    quality = Qualities.P720.value,
-                    isM3u8 = false
-                )
+                    type = ExtractorLinkType.VIDEO
+                ) {
+                    this.referer = data
+                    this.quality = Qualities.P720.value
+                }
             )
         }
 
