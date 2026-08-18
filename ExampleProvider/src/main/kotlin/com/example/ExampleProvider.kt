@@ -35,10 +35,9 @@ class HindiAnimeZone : MainAPI() {
         val poster = doc.select(".td-post-featured-image img").attr("src")
         val desc = doc.select(".td-post-content").text()
 
-        val episode = newEpisode(
-            data = url,
-            name = title
-        )
+        val episode = newEpisode<String>(url) {
+            this.name = title
+        }
 
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             this.posterUrl = poster

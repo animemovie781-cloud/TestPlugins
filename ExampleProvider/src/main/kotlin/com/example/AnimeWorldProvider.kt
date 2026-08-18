@@ -86,10 +86,9 @@ class AnimeWorldProvider : MainAPI() {
                                 val epNum = ep.select(".num-epi").text()
                                 
                                 episodes.add(
-                                    newEpisode(
-                                        data = epLink,
-                                        name = if (epTitle.isNotEmpty()) "$epTitle $epNum" else epNum
-                                    )
+                                    newEpisode<String>(epLink) {
+                                        this.name = if (epTitle.isNotEmpty()) "$epTitle $epNum" else epNum
+                                    }
                                 )
                             }
                         } catch (e: Exception) {
